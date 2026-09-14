@@ -216,7 +216,7 @@ Register-ScheduledTask -TaskName 'SchwabTosLogin' -TaskPath '\' -Principal (New-
 **中文**：Schwab API 的 refresh token 只有 7 天寿命，过期就要人工浏览器重新授权。`schwab_token_keeper.py`（已随附本目录，配合 Windows 计划任务）可实现全自动续期：
 
 - **English**: Triple triggers — daily 12:00 / 21:00 / 10 min after logon — check token age: if under 5 days, only health check (refreshes access token and writes it back)
-- **中文**：每天 12:00 / 21:00 / 登录后 10 分钟 三重触发，检查 token 年龄：不满 5 天只做健康检查（顺带刷新 access token 写回）
+- **中文**：每天 12:00 / 21:00 / 登录后 10 分钟 三重触发，检查 token 已用天数：不满 5 天只做健康检查（顺带刷新 access token 写回）
 - **English**: If 5+ days old and during US market-closed hours (Beijing 04:00–21:20) → headless browser auto re-authorization (first store account/password/TOTP in Windows Credential Manager via `--store-creds`)
 - **中文**：满 5 天且在美股闭市时段（北京 04:00–21:20）→ 无头浏览器自动重授权（需先把账号/密码/TOTP 存入 Windows 凭据管理器，`--store-creds`）
 - **English**: Auto-backup before writing tokens.db; auto-rollback on self-check failure; zero intrusion — doesn't modify the main program
