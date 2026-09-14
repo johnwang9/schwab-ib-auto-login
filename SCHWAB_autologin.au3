@@ -1,26 +1,5 @@
 ; ============================================================
 ; thinkorswim Auto-Login Script
-;
-; 2026-09-06 v2 rewrite:
-;   1. Credentials read from accounts.ini (no hardcoded passwords)
-;   2. Two-step login + clipboard paste (thinkorswim embeds Chromium, Send is unreliable)
-;   3. Kill old script instances on re-launch
-;   4. [Critical fix] Exclude "thinkorswim Updater" false positive
-;      Problem: Updater window title contains "thinkorswim";
-;               old code used WinExists("thinkorswim") partial match,
-;               treating the updater as the main window,
-;               falsely detecting "already logged in" and exiting — APP never launches.
-;      Fix: a) Exclude windows with "Update/Install" in title when checking main window
-;           b) If updater is running, wait for it to finish before continuing (don't exit)
-;
-; 2026-09-07 v3 speedup:
-;   Replaced the fixed Sleep(5s) before typing with _PageReady pixel detection:
-;   3-point sampling detects when the login page has rendered, then types the
-;   username immediately (typically 1~2 s, 4 s max fallback). Verified reliable.
-;   Step 2 (password) keeps fixed waits on purpose: page-switch detection with
-;   auto-retry once pasted the username into the password field -> "Login failed".
-;
-; Historical backups (with hardcoded passwords) kept in the original working directory, not shared here
 ; ============================================================
 
 #include <Misc.au3>

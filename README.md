@@ -128,7 +128,7 @@ Global $PY_RUN    = True                 ; set False to skip running the script 
 3. Check current state / 判断当前状态:
    - Login window already open → fill directly / 登录窗口已开 → 直接去填写
    - thinkorswim already running (logged in) → notify and exit, no duplicate login / thinkorswim 已在运行（已登录）→ 提示后退出，不重复登录
-   - Neither → launch thinkorswim via `explorer.exe` (see "Why use explorer.exe to launch" below) / 都不是 → 通过 `explorer.exe` 启动 thinkorswim（见下方"为什么用 explorer 启动"）
+   - Neither → launch thinkorswim via `explorer.exe` / 都不是 → 通过 `explorer.exe` 启动 thinkorswim
 4. Wait for "thinkorswim updater" to finish (first launch downloads updates, up to 10 min max), with tray tip + small progress window during the wait / 等待"thinkorswim 更新程序"跑完（首次启动要先下载更新，最长等 10 分钟），期间右下角有气泡提示 + 小进度窗口
 5. After login window appears, auto **two-step login** / 登录窗口出现后，自动**两步登录**:
    - Step 1: click Login ID field → clipboard-paste username → Enter / 第一步：点击 Login ID 输入框 → 剪贴板粘贴用户名 → 回车
@@ -137,73 +137,11 @@ Global $PY_RUN    = True                 ; set False to skip running the script 
 
 ---
 
-## 4. thinkorswim Section: Why It's Written This Way (Principles & Pitfalls — Read Before Modifying)
-## 四、thinkorswim 部分：为什么这么写（原理与踩坑，改代码前必读）
+## 4. IBKR TWS / Gateway Notes
+## 四、IBKR TWS / Gateway 使用注意事项
 
-### 1. thinkorswim Login Fields Are Not Standard Windows Controls
-### 1. thinkorswim 登录框不是普通 Windows 控件
-
-**中文**：登录窗口是**内嵌 Chromium 网页**（SunAwtFrame 里嵌浏览器），AutoIt 的 `ControlSend`/`ControlSetText` 对它无效，只能：
-- 用 `MouseClick` 按坐标点击输入框（坐标按窗口位置比例计算，不随窗口位置变化）
-- 用 `WinGetPos` 动态取窗口位置，输入框 ≈ 窗口宽度 50%、高度 28% 处
-
-**English**: The login window is an **embedded Chromium web page** (browser inside a SunAwtFrame). AutoIt's `ControlSend`/`ControlSetText` don't work on it — you can only:
-- Use `MouseClick` to click input fields by coordinates (calculated as ratio of window position, independent of window location)
-- Use `WinGetPos` to dynamically get window position; input field ≈ 50% window width, 28% window height
-
-### 2. Can't Use Send — Must Use Clipboard Paste
-### 2. 不能直接 Send，要用剪贴板粘贴
-
-**English**: Chinese IME will swallow or convert `Send("your_userid")`-style ASCII strings into pinyin candidates. **Clipboard paste (`ClipPut` + `Ctrl+V`) completely bypasses the IME** — reliable regardless of IME state.
-
-**中文**：中文输入法会把 `Send("your_userid")` 这类英文字符串吞掉或转成拼音候选。**剪贴板粘贴（`ClipPut` + `Ctrl+V`）完全绕过输入法**，任何输入法状态下都可靠。
-
-### 3. Login Is "Two-Step", Not One-Page
-### 3. 登录是"两步式"，不是一页填完
-
-**English**: Page 1 only has Login ID (click Continue); page 2 reveals the password field. Script does two steps: fill ID → Enter → wait 4s → fill password → Enter.
-
-**中文**：第一页只有 Login ID（点 Continue），第二页才出密码框。脚本分两步：填 ID → 回车 → 等 4 秒 → 填密码 → 回车。
-
-### 4. Updater Window Falsely Detected as "Already Logged In"
-### 4. 更新程序窗口会被误判成"已登录"
-
-**English**: The "thinkorswim updater" window title contains "thinkorswim", so `WinExists("thinkorswim")` substring match hits it, causing the script to falsely detect "already logged in" and exit. The `_IsMainRunning()` function uses three-layer filtering to exclude it: skip hidden windows / skip windows with "更新/Update/安装" in title / window process must be thinkorswim.exe.
-
-**中文**："thinkorswim 更新程序"窗口标题含 "thinkorswim" 字样，`WinExists("thinkorswim")` 子串匹配会命中它，导致脚本误判"已登录"直接退出。脚本里 `_IsMainRunning()` 用三层过滤排除：跳过隐藏窗口 / 跳过标题含"更新/Update/安装"的窗口 / 窗口进程必须是 thinkorswim.exe。
-
-### 5. Launch via explorer.exe, Not AutoIt's Run
-### 5. 用 explorer.exe 启动，而不是 AutoIt 的 Run
-
-**English**: When launched via `Run()`, thinkorswim is treated as a child process of the script — security software may block update downloads, causing the updater window to hang and the login UI to never appear. Using `explorer.exe "thinkorswim.exe"` goes through the Windows Shell (same context as manual double-click), and updates finish in 20–35 seconds.
-
-**中文**：直接 `Run()` 启动时，thinkorswim 会被识别为脚本子进程，更新下载会被安全软件卡住，导致更新窗口一直挂着、登录界面出不来。改用 `explorer.exe "thinkorswim.exe"` 走 Windows Shell（和手动双击同一上下文），更新 20~35 秒即可完成。
-
-### 6. Every Launch Downloads Updates First → Pre-warm with Boot Task
-### 6. 每次启动都先下载更新，很慢 → 用开机计划任务预热
-
-**English**: thinkorswim runs an update download on every launch (3–5 min). Solution: **auto-run this script once on boot** — by the time you need it, updates are done and login is complete (see next section).
-
-**中文**：thinkorswim 每次启动先跑更新下载（3~5 分钟）。解法：**开机后自动跑一次本脚本**，等你要用时早已更新完、登录好（见下一节）。
-
----
-
-## 5. IBKR TWS / Gateway Section: Why It's Written This Way
-## 五、IBKR TWS / Gateway 部分：为什么这么写
-
-### 1. TWS Stuck on "Update Check" — Add Official Flag to Skip
-### 1. TWS 启动卡在"更新检查"，加官方开关跳过
-
-**English**: `tws.exe` connects to IB's download server for an update check on every launch — if it can't connect, it hangs (spinning without showing the login window). Solution: add `-J-DskipUpdateCheck=true` launch parameter (confirmed by decompiling twslaunch jar — `LauncherProperties.skipUpdateCheck` boolean property). When you actually need to upgrade TWS, manually run once without this parameter.
-
-**中文**：`tws.exe` 每次启动先连 IB 下载服务器做更新检查，检查不动就卡住（表现为"长时间转圈不出现登录窗"）。解法是启动参数加 `-J-DskipUpdateCheck=true`（反编译 twslaunch jar 确认的 `LauncherProperties.skipUpdateCheck` 布尔属性）。真正需要升级 TWS 时，手动跑一次不带该参数的启动即可。
-
-```
-C:\Jts\tws.exe -J-DjtsConfigDir="C:\Jts" -J-DskipUpdateCheck=true
-```
-
-### 2. When Using a Proxy, IB Domains Must Go DIRECT
-### 2. 走代理上网时，IB 域名必须直连
+### 1. When Using a Proxy, IB Domains Must Go DIRECT
+### 1. 走代理上网时，IB 域名必须直连
 
 **English**: If you have a system proxy like Clash running, TWS traffic gets hijacked by the proxy, causing "network error, cannot login". Add DIRECT rules for IB domains in your proxy config (example for Clash's Merge.yaml — insert at the top of rules):
 
@@ -215,22 +153,15 @@ C:\Jts\tws.exe -J-DjtsConfigDir="C:\Jts" -J-DskipUpdateCheck=true
 - DOMAIN-SUFFIX,interactivebrokers.com,DIRECT   # TWS update download / TWS 更新下载
 ```
 
-### 3. Java AWT Login Window Also Has No Standard Controls
-### 3. Java AWT 登录窗同样没有标准控件
-
-**English**: TWS / Gateway login window is Java Swing/AWT (title `Login - Interactive Brokers` etc.), same as thinkorswim — `ControlSend` doesn't work, only coordinate click + clipboard paste. The window is fixed-size; coordinates are calculated as window position + offset, not drifting with window movement.
-
-**中文**：TWS / Gateway 的登录窗是 Java Swing/AWT（标题 `Login - Interactive Brokers` 等），和 thinkorswim 一样无法 `ControlSend`，只能坐标点击 + 剪贴板粘贴。窗口是固定尺寸，坐标按窗口位置 + 偏移量计算，不随窗口移动而漂移。
-
-### 4. Mobile IB Key 2FA Is the Unavoidable Last Step
-### 4. 手机 IB Key 2FA 是绕不过的最后一环
+### 2. Mobile IB Key 2FA Is the Unavoidable Last Step
+### 2. 手机 IB Key 2FA 是绕不过的最后一环
 
 **English**: After submitting credentials, IB pushes an IB Key confirmation to your phone (or asks for a push number). The script **stops here and waits for you to tap confirm on your phone** — the window title changes from Login to "Second Factor Authentication...". This is IB's security design — cannot (and should not) be automated. So "fully automatic" really means "auto-fills everything up to the final phone confirmation".
 
 **中文**：提交凭据后 IB 会向手机推送 IB Key 确认（或要求输入推送号码）。脚本在这一步**停住等你掏手机点确认**，窗口标题从 Login 变成 "Second Factor Authentication..."。这是 IB 的安全设计，无法（也不应该）自动化——所以"全自动"的准确含义是"自动填到只差最后一下手机确认"。
 
-### 5. Gateway-Specific Configuration
-### 5. Gateway 的两个专属配置
+### 3. Gateway-Specific Configuration
+### 3. Gateway 的两个专属配置
 
 - **中文**：**ApiOnly 模式**：`C:\Jts\jts.ini` 里 `ApiOnly=true` 让 Gateway 登录后不显示图表界面，只留 API 端口（配合程序化交易，内存占用小）
 - **English**: **ApiOnly mode**: Set `ApiOnly=true` in `C:\Jts\jts.ini` to make Gateway hide the chart UI after login, keeping only the API port (for programmatic trading, lower memory)
@@ -241,8 +172,8 @@ C:\Jts\tws.exe -J-DjtsConfigDir="C:\Jts" -J-DskipUpdateCheck=true
 
 ---
 
-## 6. Register "Boot Auto-Login" Scheduled Task
-## 六、注册"开机自动登录"计划任务
+## 5. Register "Boot Auto-Login" Scheduled Task
+## 五、注册"开机自动登录"计划任务
 
 **English**: All three login scripts can be registered the same way (just swap the script name in `-Argument`). Using thinkorswim as example — run in admin PowerShell:
 
@@ -277,8 +208,8 @@ Register-ScheduledTask -TaskName 'SchwabTosLogin' -TaskPath '\' -Principal (New-
 
 ---
 
-## 7. Schwab API Token Auto-Renewal (schwab_token_keeper.py)
-## 七、Schwab API token 自动续期（schwab_token_keeper.py）
+## 6. Schwab API Token Auto-Renewal (schwab_token_keeper.py)
+## 六、Schwab API token 自动续期（schwab_token_keeper.py）
 
 **English**: Schwab API refresh tokens expire in 7 days — manual browser re-authorization is required after expiry. `schwab_token_keeper.py` (included in this directory, paired with Windows Task Scheduler) enables fully automatic renewal:
 
@@ -316,15 +247,3 @@ Register-ScheduledTask -TaskName 'SchwabTokenKeeper' -TaskPath '\' -Principal (N
 - **English**: For first-time use, run `python schwab_token_keeper.py --login` once for headed calibration, and use `--store-creds` to store credentials
 - **中文**：运行日志：`<你的工程目录>\.schwabdev\keeper.log`
 - **English**: Run log: `<your project dir>\.schwabdev\keeper.log`
-
----
-
-## 8. Pre-Upload Checklist
-## 八、目录上传前检查清单
-
-- [ ] **`.gitignore` in place** (auto-excludes `accounts.ini`, `*.db`, `*.log`, `.schwabdev/`, `__pycache__/`, `.env`, etc.) / `.gitignore` **已就位**（自动排除 `accounts.ini`、`*.db`、`*.log`、`.schwabdev/`、`__pycache__/`、`.env` 等）
-- [ ] `accounts.ini` **deleted** (only `accounts.ini.example` template remains) / `accounts.ini` **已删除**（只保留 `accounts.ini.example` 模板）
-- [ ] No hardcoded passwords in `.au3` scripts (this solution reads from ini — naturally clean; if using old hardcoded scripts, convert to ini method first) / `.au3` 脚本里无明文账号密码（本方案从 ini 读，天然干净；若你用的是旧版明文脚本，先改成 ini 方式）
-- [ ] Grep the entire directory for personal account names / password strings — zero hits (script config uses `myaccount` placeholder) / 全目录 grep 个人账号名 / 密码串无命中（脚本配置区已统一为 `myaccount` 占位）
-- [ ] Personal paths in docs (`C:\Users\...`, computer names, etc.) replaced with generic placeholders or "modify as needed" / 文档中的个人路径（`C:\Users\...`、计算机名等）已替换成通用占位或注明"按需修改"
-- [ ] `.bak` historical versions (may contain plaintext passwords) not included in this directory / `.bak` 历史版本（可能含明文密码）不放进本目录

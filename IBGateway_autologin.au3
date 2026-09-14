@@ -1,11 +1,5 @@
 ; ============================================================
 ; IBKR Gateway Auto-Login Script
-; 2026-09-06 rewrite:
-;   1. Credentials read from accounts.ini in same directory, no longer hardcoded
-;   2. Removed "wait for user to press Enter" step — auto-submit login
-;   3. Added IB Key second factor (2FA) wait prompt + auto-retry on login failure
-;   4. Auto-run Python script after successful login
-; Historical backups (with hardcoded passwords) kept in the original working directory, not shared here
 ; ============================================================
 
 #include <Misc.au3>
