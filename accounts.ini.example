@@ -1,0 +1,14 @@
+; thinkorswim / TWS / Gateway auto-login credential template
+; Usage: copy this file and rename to accounts.ini, fill in your own credentials
+; !! IMPORTANT: accounts.ini contains plaintext passwords — NEVER upload/share/screenshot !!
+; !! When sharing this directory, only include accounts.ini.example (this template) !!
+
+[myaccount]
+user=your_login_id
+pw=your_password
+
+; Multiple accounts: copy the section above and rename it, e.g.
+; [another_account]
+; user=another_login_id
+; pw=another_password
+; Then change $ACCOUNT at the top of the .au3 script to match the section name
