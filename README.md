@@ -11,10 +11,11 @@
 
 ---
 
-> **中文**：欢迎加入技术交流群【Stock quant analysis 股票量化分析】：点击链接加入群聊 https://qm.qq.com/q/8xXDlS8clG （群内交流本方案、量化交易与开户相关话题）
-> **English**: Join our discussion group 【Stock quant analysis 股票量化分析】: click the link to join the group chat https://qm.qq.com/q/8xXDlS8clG (discuss this solution, quantitative trading, and account opening topics)
+> **中文 / English**: 技术交流群【Stock quant analysis 股票量化分析】— 点击链接加入 / Join our discussion group: https://qm.qq.com/q/8xXDlS8clG （群内交流本方案、量化交易与开户相关话题 / discuss this solution, quantitative trading and account opening. English speakers are welcome.）
+>
+> 也可以在 [GitHub Issues](https://github.com/johnwang9/schwab-ib-auto-login/issues) 提问 / Questions and bug reports are also welcome via [GitHub Issues](https://github.com/johnwang9/schwab-ib-auto-login/issues).
 
-> **中文**：目标：**中文**：**每天开盘前，你还在手忙脚乱地输密码、盯着转圈圈的更新进度条，眼睁睁错过第一波行情吗？**
+> **中文**：目标：**每天开盘前，你还在手忙脚乱地输密码、盯着转圈圈的更新进度条，眼睁睁错过第一波行情吗？**
 >
 > 为方便交易登录，避免频繁登录需要输入用户名和密码，以及漫长的等待更新下载，我们对主流券商**嘉信理财 Schwab thinkorswim**、**盈透证券 IBKR TWS / IB**、**盈透证券 IBKR API Gateway** 开发了自动填充账户密码、一键自动登录功能。尤其是 **Schwab thinkorswim** 每次登录都要长时间下载等待，我们专门开发了**开机即自动执行下载任务**的能力——你还没坐到电脑前，更新早就跑完了，登录界面直接摆在那儿等你。
 >
