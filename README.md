@@ -11,7 +11,7 @@
 
 ---
 
-> **English / 中文**: Join our discussion group 【Stock quant analysis 股票量化分析】— join via this link / 点击链接加入: https://qm.qq.com/q/8xXDlS8clG （群内交流本方案、量化交易与开户相关话题 / discuss this solution, quantitative trading and account opening. English speakers are welcome.）
+> **English / 中文**: Join our discussion group 【Stock quant analysis 股票量化分析】— join via this link / 点击链接加入: https://qm.qq.com/q/8xXDlS8clG （群内交流本方案、量化交易与开户相关话题 / discuss this solution, quantitative trading and account opening.）
 >
 > Questions and bug reports are also welcome via [GitHub Issues](https://github.com/johnwang9/schwab-ib-auto-login/issues). / 也可以在 [GitHub Issues](https://github.com/johnwang9/schwab-ib-auto-login/issues) 提问。
 
