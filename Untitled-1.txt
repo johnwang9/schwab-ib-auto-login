@@ -1,0 +1,15 @@
+Body:
+Still typing passwords and staring at a spinning update bar every morning before the open — while the first move of the day slips away?
+To make broker login painless — no more repeated username/password entry and no more long waits for update downloads — we built auto-fill, one-click auto-login for the major brokers: Schwab thinkorswim, IBKR TWS / IB, and IBKR API Gateway. thinkorswim in particular downloads updates on every launch, so we added download-on-boot: the update task runs automatically at startup, so by the time you sit down the login screen is already waiting for you.
+Everything is source code. Credentials stay in a local file on your own machine. Safe, reliable, use it with confidence.
+Configure once, forget the routine: double-click (or auto-start on boot) to complete the full flow — "launch → wait for UI ready → fill login ID → fill password → submit" — for each broker client. Covers three platforms: Schwab thinkorswim (auto-login + boot pre-warm), IBKR TWS (skip update check + mobile 2FA wait), IBKR Gateway (Live/Paper dual mode + auto-run data script after login). Companion: Schwab API token 7-day auto-renewal (schwab_token_keeper.py + Task Scheduler) — the API authorization renews itself too, so the "token expired, redo the browser flow" chore is gone for good.
+What you save isn't a few seconds — it's your sharpest few minutes before the open.
+------------------------------
+## 📦 Project Details & Links
+
+* GitHub Repository: https://github.com/johnwang9/schwab-ib-auto-login
+* Discussion Group (QQ): Join our chat 【Stock quant analysis 股票量化分析】 to discuss this setup, algorithmic trading, and account opening: https://qm.qq.com/q/8xXDlS8clG
+* Issues & Bugs: Feel free to open a ticket on GitHub Issues if you run into any bugs or have feature requests.
+
+## ⚠️ Disclaimer
+Personal-use automation source code with plaintext local credentials storage. Use at your own risk; the author assumes no liability for financial or account losses.

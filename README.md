@@ -134,6 +134,7 @@ Global $PY_RUN    = True                 ; set False to skip running the script 
    - Step 1: click Login ID field → clipboard-paste username → Enter / 第一步：点击 Login ID 输入框 → 剪贴板粘贴用户名 → 回车
    - Step 2: wait for password page → click password field → clipboard-paste password → Enter / 第二步：等密码页 → 点击密码框 → 剪贴板粘贴密码 → 回车
 6. Clear clipboard (no password residue), wait for login window to close to confirm success / 清空剪贴板（不残留密码），等登录窗口关闭确认成功
+7. **At most 2 attempts** (`$MAX_TRY`, thinkorswim only). If both fail, the script stops and tells you — a repeat failure usually means the server is under maintenance, so it won't keep hammering the login endpoint. / **最多试 2 次**（`$MAX_TRY`，仅 thinkorswim）：两次都失败就停止并弹窗提示——连续失败通常是网站在维护，不再反复重试。
 
 ---
 

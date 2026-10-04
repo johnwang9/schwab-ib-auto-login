@@ -15,6 +15,8 @@ Global $sMainKey  = "thinkorswim"          ; Main window keyword (partial match,
 Global $T_BOOT    = 300 ; Max seconds to wait for login window to appear (thinkorswim may run updater first)
 Global $T_LOGIN   = 120 ; Max seconds to wait for login window to close (confirm success)
 Global $T_UPDATE  = 600 ; Max seconds to wait for update to complete (10 min)
+Global $MAX_TRY   = 2   ; Max login attempts (total, not retries). If all fail, stop trying
+                        ; — repeated failures usually mean the server is under maintenance.
 ; =================================================
 
 ; ---------- Kill other instances of this script ----------
@@ -303,61 +305,91 @@ Else
     Sleep(2000)
 EndIf
 
-; ---------- Step 1: Click Login ID field, paste username ----------
-; [2026-09-06] Login window changed to "Welcome" vertical layout (377x682), Login ID field at ~28% height
-; (old 45% coordinate landed on empty space, paste was ineffective)
-; [2026-09-07] Added IsArray guard: WinGetPos may return 0 (window gone), subscript access crashes
-If Not WinExists($sLogin) Then
-    MsgBox(48, "thinkorswim Auto-Login", "Login window disappeared before filling. It may have auto-logged in or was closed." & @CRLF & _
-            "Please check thinkorswim login status and retry.")
-    Exit
-EndIf
-Local $pos = WinGetPos($sLogin)
-If Not IsArray($pos) Then
-    MsgBox(48, "thinkorswim Auto-Login", "Failed to get login window position, please retry.")
-    Exit
-EndIf
-Local $inputX = $pos[0] + Int($pos[2] * 0.50)
-Local $inputY = $pos[1] + Int($pos[3] * 0.28)
+; ---------- Two-step login, at most $MAX_TRY attempts ----------
+; If every attempt fails, stop trying: repeated failures usually mean the server is
+; under maintenance (or the credentials are wrong), so hammering it again is pointless.
+Local $bOK = False
 
-MouseClick("left", $inputX, $inputY, 1, 0)
-Sleep(1000)
-ClipPut($user)
-Send("^a^v") ; Select all + paste (overwrite any residual content)
-Sleep(500)
-Send("{ENTER}")
+For $iTry = 1 To $MAX_TRY
+    ; Login window already gone -> treat as success (auto-login / window closed)
+    If Not WinExists($sLogin) Then
+        $bOK = True
+        ExitLoop
+    EndIf
 
-; Wait for second page (password input) to load
-Sleep(4000)
+    WinActivate($sLogin)
+    WinWaitActive($sLogin, "", 10)
 
-; ---------- Step 2: Click password field, paste password ----------
-; [2026-09-06] Password field also at ~28% height (confirmed via screenshot)
-If Not WinExists($sLogin) Then
-    MsgBox(48, "thinkorswim Auto-Login", "Login window disappeared before filling password. It may have auto-logged in." & @CRLF & _
-            "Please check thinkorswim login status.")
-    Exit
-EndIf
-Local $pos2 = WinGetPos($sLogin)
-If Not IsArray($pos2) Then
-    MsgBox(48, "thinkorswim Auto-Login", "Failed to get password page window position, please retry.")
-    Exit
-EndIf
-Local $pwX = $pos2[0] + Int($pos2[2] * 0.50)
-Local $pwY = $pos2[1] + Int($pos2[3] * 0.28)
+    ; ---------- Step 1: Click Login ID field, paste username ----------
+    ; [2026-09-06] Login window changed to "Welcome" vertical layout (377x682), Login ID field at ~28% height
+    ; (old 45% coordinate landed on empty space, paste was ineffective)
+    ; [2026-09-07] Added IsArray guard: WinGetPos may return 0 (window gone), subscript access crashes
+    Local $pos = WinGetPos($sLogin)
+    If Not IsArray($pos) Then
+        If $iTry < $MAX_TRY Then ContinueLoop
+        ExitLoop
+    EndIf
+    Local $inputX = $pos[0] + Int($pos[2] * 0.50)
+    Local $inputY = $pos[1] + Int($pos[3] * 0.28)
 
-MouseClick("left", $pwX, $pwY, 1, 0)
-Sleep(1000)
-ClipPut($pw)
-Send("^a^v")
-Sleep(500)
-Send("{ENTER}")
+    MouseClick("left", $inputX, $inputY, 1, 0)
+    Sleep(1000)
+    ClipPut($user)
+    Send("^a^v") ; Select all + paste (overwrite any residual content)
+    Sleep(500)
+    Send("{ENTER}")
 
-; Clear clipboard (no password residue)
-ClipPut("")
+    ; Wait for second page (password input) to load
+    Sleep(4000)
 
-; ---------- Wait for login window to close (confirm login success) ----------
-If WinWaitClose($sLogin, "", $T_LOGIN) Then
+    ; ---------- Step 2: Click password field, paste password ----------
+    ; [2026-09-06] Password field also at ~28% height (confirmed via screenshot)
+    If Not WinExists($sLogin) Then
+        $bOK = True ; Window closed = login succeeded
+        ExitLoop
+    EndIf
+    Local $pos2 = WinGetPos($sLogin)
+    If Not IsArray($pos2) Then
+        If $iTry < $MAX_TRY Then ContinueLoop
+        ExitLoop
+    EndIf
+    Local $pwX = $pos2[0] + Int($pos2[2] * 0.50)
+    Local $pwY = $pos2[1] + Int($pos2[3] * 0.28)
+
+    MouseClick("left", $pwX, $pwY, 1, 0)
+    Sleep(1000)
+    ClipPut($pw)
+    Send("^a^v")
+    Sleep(500)
+    Send("{ENTER}")
+
+    ; Clear clipboard (no password residue)
+    ClipPut("")
+
+    ; ---------- Wait for login window to close (confirm login success) ----------
+    If WinWaitClose($sLogin, "", $T_LOGIN) Then
+        $bOK = True
+        ExitLoop
+    EndIf
+
+    ; ---------- This attempt failed ----------
+    ; Return to the Login ID page and try once more (only if attempts remain)
+    If $iTry < $MAX_TRY Then
+        TrayTip("thinkorswim Auto-Login", "Login attempt " & $iTry & " failed, retrying (" & ($iTry + 1) & "/" & $MAX_TRY & ")...", 10, 1)
+        WinActivate($sLogin)
+        Sleep(1500)
+        Send("{ESC}") ; Go back to the Login ID page
+        Sleep(3000)
+    EndIf
+Next
+
+; ---------- Result ----------
+If $bOK Then
     TrayTip("thinkorswim Auto-Login", "Login successful, account: " & $user, 5, 1)
 Else
-    MsgBox(48, "thinkorswim Auto-Login", "Login window did not close within " & $T_LOGIN & " seconds, please check manually.")
+    ; Give up: do not keep retrying, the server may be under maintenance
+    MsgBox(48, "thinkorswim Auto-Login", _
+            "Login failed after " & $MAX_TRY & " attempts, stopped retrying." & @CRLF & @CRLF & _
+            "The thinkorswim server may be under maintenance, or the credentials are incorrect." & @CRLF & _
+            "Please check the site status and run again later.")
 EndIf
